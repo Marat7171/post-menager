@@ -21,7 +21,7 @@ function App() {
     const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query);
     let pagesArray = getPagesArray(totalPages);
 
-    const [fetchPosts, isPostsLoading, postError] = useFetching(async () => {
+    const [fetchPosts, isPostsLoading, postError] = useFetching(async (limit, page) => {
         const response = await PostService.getAll(limit, page);
         setPosts(response.data);
         const totalCount = response.headers['x-total-count'];
@@ -31,8 +31,8 @@ function App() {
 
     // Если передать массив пустым, то функция отработает только 1 раз
     useEffect(() => {
-        fetchPosts()
-    }, [page]);
+        fetchPosts(limit, page)
+    }, []);
 
     const createPost = (newPost) => {
         setPosts([...posts, newPost])
@@ -45,6 +45,7 @@ function App() {
 
     const changePage = (page) => {
         setPage(page);
+        fetchPosts(limit, page);
     }
     return (
         <div className="App">
