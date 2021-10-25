@@ -23,6 +23,12 @@
     align-content: center;
 }
 
+.post__btns {
+    display: flex;
+    height: 100%;
+    margin: auto;
+}
+
 .page__wrapper {
     margin-top: 30px;
     display: flex;
