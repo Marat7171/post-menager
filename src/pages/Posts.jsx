@@ -20,19 +20,36 @@ function Posts() {
     const [limit, setLimit] = useState(10);
     const [page, setPage] = useState(1);
     const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query);
+    const lastElement = useRef();
+    const observer = useRef();
 
     const [fetchPosts, isPostsLoading, postError] = useFetching(async (limit, page) => {
         const response = await PostService.getAll(limit, page);
-        setPosts(response.data);
+        setPosts([...posts, ...response.data]);
         const totalCount = response.headers['x-total-count'];
         setTotalPages(getPageCount(totalCount, limit))
     })
+
+    useEffect(() => {
+        if(isPostsLoading) return;
+        if(observer.current) observer.current.disconnect();
+        var callback = function(entries, observer) {
+            //каждый раз при наблюдении соответствующего элемента отрабатывает этот callback
+            if (entries[0].isIntersecting && page < totalPages) {
+                console.log(page);
+                setPage(page + 1);
+            }
+
+        };
+        observer.current = new IntersectionObserver(callback);
+        observer.current.observe(lastElement.current)
+    }, [isPostsLoading])
 
 
     // Если передать массив пустым, то функция отработает только 1 раз
     useEffect(() => {
         fetchPosts(limit, page)
-    }, []);
+    }, [page]);
 
     const createPost = (newPost) => {
         setPosts([...posts, newPost])
@@ -63,9 +80,10 @@ function Posts() {
             {postError &&
             <h1>Произошла ошибка ${postError}</h1>
             }
-            {isPostsLoading
-                ? <div style={{display: 'flex', justifyContent: 'center', marginTop: 50}}><Loader/></div>
-                : <PostList remove={removePost} posts={sortedAndSearchedPosts} title='Posts about JS'/>
+            <PostList remove={removePost} posts={sortedAndSearchedPosts} title='Posts about JS'/>
+            <div ref={lastElement} style={{height: 20, background: 'red'}}/>
+            {isPostsLoading &&
+                <div style={{display: 'flex', justifyContent: 'center', marginTop: 50}}><Loader/></div>
             }
             <Pagination page={page}
                         changePage={changePage}
