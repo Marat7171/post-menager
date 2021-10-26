@@ -6,7 +6,7 @@ export const useObserver = (ref, canLoad, isLoading, callback) => {
     useEffect(() => {
         if(isLoading) return;
         if(observer.current) observer.current.disconnect();
-        var cb = function(entries, observer) {
+        let cb = function(entries, observer) {
             //каждый раз при наблюдении соответствующего элемента отрабатывает этот callback
             if (entries[0].isIntersecting && canLoad) {
                 callback()
